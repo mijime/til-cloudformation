@@ -1,8 +1,8 @@
-# cloud9-setup
+# stacks
 
 ## Usage
 
 ```
-make deploy-infra
-make deploy-app-compiled
+make sudo-output-CoreIam
+make deploy-TempBucket
 ```
