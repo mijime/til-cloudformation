@@ -8,6 +8,10 @@ Outputs:
       - RoleName: !Ref AdminRole
         AccountId: !Ref AWS::AccountId
 
+Parameters:
+  Users:
+    Type: String
+
 Resources:
   AdminGroup:
     Type: AWS::IAM::Group
@@ -23,19 +27,22 @@ Resources:
               - sts:AssumeRole
             Principal:
               AWS:
-                - !Ref AWS::AccountId
+                - !Sub
+                  - "arn:aws:iam::${AccountId}:user/${User}"
+                  - AccountId: !Ref AWS::AccountId
+                    User: !Select [0, !Split [",", !Ref Users]]
             Condition:
               Bool:
                 aws:MultiFactorAuthPresent: true
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/AdministratorAccess
 
-  AssumeAdminRole:
+  AssumeAdminRolePolicy:
     Type: AWS::IAM::Policy
     Properties:
       Groups:
         - !Ref AdminGroup
-      PolicyName: assume-admin-role
+      PolicyName: assume-admin-role-policy
       PolicyDocument:
         Version: "2012-10-17"
         Statement:

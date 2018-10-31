@@ -14,13 +14,15 @@ outputs/%.txt: stacks/%.yml
 deploy-%: stacks/%.yml
 	aws cloudformation deploy \
 		--stack-name $* \
-		--template-file $<
+		--template-file $< \
+		$(ARGS)
 
 sudo-deploy-%: stacks/%.yml
 	aws cloudformation deploy \
 		--stack-name $* \
 		--template-file $< \
-		--capabilities CAPABILITY_IAM
+		--capabilities CAPABILITY_IAM \
+		$(ARGS)
 
 delete-%: stacks/%.yml
 	aws cloudformation delete-stack \
