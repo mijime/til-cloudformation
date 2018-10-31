@@ -31,6 +31,10 @@ Resources:
                   - "arn:aws:iam::${AccountId}:user/${User}"
                   - AccountId: !Ref AWS::AccountId
                     User: !Select [0, !Split [",", !Ref Users]]
+                - !Sub
+                  - "arn:aws:iam::${AccountId}:user/${User}"
+                  - AccountId: !Ref AWS::AccountId
+                    User: !Select [1, !Split [",", !Ref Users]]
             Condition:
               Bool:
                 aws:MultiFactorAuthPresent: true
