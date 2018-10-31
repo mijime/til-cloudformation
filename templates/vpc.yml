@@ -3,11 +3,19 @@ Outputs:
   PublicSubnetId:
     Value: !Ref PublicSubnet
 
+Parameters:
+  VPCCidrBlock:
+    Type: String
+    Default: 192.168.0.0/16
+  PublicSubnetCidrBlock:
+    Type: String
+    Default: 192.168.0.0/24
+
 Resources:
   MainVPC:
     Type: AWS::EC2::VPC
     Properties:
-      CidrBlock: 192.168.0.0/16
+      CidrBlock: !Ref VPCCidrBlock
       EnableDnsSupport: true
       EnableDnsHostnames: true
 
@@ -56,8 +64,10 @@ Resources:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref MainVPC
-      CidrBlock: 192.168.0.0/24
-      Ipv6CidrBlock: !Sub ['${Param1}00::/64', {Param1: !Select [0, !Split ['00::/', !Select [0, !GetAtt MainVPC.Ipv6CidrBlocks]]]}]
+      CidrBlock: !Ref PublicSubnetCidrBlock
+      Ipv6CidrBlock: !Sub
+        - '${CidrPrefix}00::/64'
+        - CidrPrefix: !Select [0, !Split ['00::/', !Select [0, !GetAtt MainVPC.Ipv6CidrBlocks]]]
       AssignIpv6AddressOnCreation: true
 
   PublicSubnetRouteTableAssociation:
