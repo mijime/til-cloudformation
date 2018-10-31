@@ -1,0 +1,49 @@
+---
+Outputs:
+  AdminRoleArn:
+    Value: !GetAtt AdminRole.Arn
+  AdminRoleUrl:
+    Value: !Sub
+      - "https://signin.aws.amazon.com/switchrole?roleName=${RoleName}&account=${AccountId}"
+      - RoleName: !Ref AdminRole
+        AccountId: !Ref AWS::AccountId
+
+Resources:
+  AdminGroup:
+    Type: AWS::IAM::Group
+
+  AdminRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - sts:AssumeRole
+            Principal:
+              AWS:
+                - !Ref AWS::AccountId
+            Condition:
+              Bool:
+                aws:MultiFactorAuthPresent: true
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AdministratorAccess
+
+  AssumeAdminRole:
+    Type: AWS::IAM::Policy
+    Properties:
+      Groups:
+        - !Ref AdminGroup
+      PolicyName: assume-admin-role
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - sts:AssumeRole
+            Resource:
+              - !GetAtt AdminRole.Arn
+            Condition:
+              Bool:
+                aws:MultiFactorAuthPresent: true

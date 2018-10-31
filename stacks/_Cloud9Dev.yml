@@ -1,0 +1,28 @@
+---
+Parameters:
+  InstanceType:
+    Type: String
+    Default: t2.micro
+    AllowedValues:
+      - t2.nano
+      - t2.micro
+      - t2.small
+      - t2.medium
+      - t3.nano
+      - t3.micro
+      - t3.small
+      - t3.medium
+
+Resources:
+  VpcTemplate:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ../templates/vpc.yml
+
+  Cloud9Template:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ../templates/cloud9.yml
+      Parameters:
+        InstanceType: !Ref InstanceType
+        SubnetId: !GetAtt VpcTemplate.Outputs.PublicSubnetId

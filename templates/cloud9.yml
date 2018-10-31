@@ -1,0 +1,41 @@
+---
+Outputs:
+  Cloud9RepositoryUrl:
+    Value: !GetAtt Cloud9Repository.CloneUrlSsh
+
+Parameters:
+  InstanceType:
+    Type: String
+    Default: t2.micro
+    AllowedValues:
+      - t2.nano
+      - t2.micro
+      - t2.small
+      - t2.medium
+      - t3.nano
+      - t3.micro
+      - t3.small
+      - t3.medium
+  AutomaticStopTimeMinutes:
+    Type: Number
+    Default: 15
+  SubnetId:
+    Type: AWS::EC2::Subnet::Id
+
+Resources:
+  Cloud9Repository:
+    Type: AWS::CodeCommit::Repository
+    Properties:
+      RepositoryName: !Ref AWS::StackName
+
+  Cloud9EnvironmentEC2:
+    Type: AWS::Cloud9::EnvironmentEC2
+    Properties:
+      Name: !Sub ['${StackName}-Env', {StackName: !Ref 'AWS::StackName'}]
+      SubnetId: !Ref SubnetId
+      InstanceType: !Ref InstanceType
+      AutomaticStopTimeMinutes: !Ref AutomaticStopTimeMinutes
+      Repositories:
+        - PathComponent: !Sub ['src/${Path}', {Path: !Select [1, !Split ['://', !GetAtt Cloud9Repository.CloneUrlHttp ]]}]
+          RepositoryUrl: !GetAtt Cloud9Repository.CloneUrlSsh
+...

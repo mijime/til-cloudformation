@@ -1,0 +1,67 @@
+---
+Outputs:
+  PublicSubnetId:
+    Value: !Ref PublicSubnet
+
+Resources:
+  MainVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 192.168.0.0/16
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+
+  MainVPCCidrBlock:
+    Type: AWS::EC2::VPCCidrBlock
+    Properties:
+      VpcId: !Ref MainVPC
+      AmazonProvidedIpv6CidrBlock: true
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+
+  InternetGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref MainVPC
+      InternetGatewayId: !Ref InternetGateway
+
+  InternetGatewayRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref MainVPC
+
+  InternetGatewayRoute:
+    DependsOn:
+      - InternetGatewayAttachment
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref InternetGatewayRouteTable
+      GatewayId: !Ref InternetGateway
+      DestinationCidrBlock: 0.0.0.0/0
+
+  InternetGatewayRouteV6:
+    DependsOn:
+      - InternetGatewayAttachment
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref InternetGatewayRouteTable
+      GatewayId: !Ref InternetGateway
+      DestinationIpv6CidrBlock: ::/0
+
+  PublicSubnet:
+    DependsOn:
+      - InternetGatewayAttachment
+      - MainVPCCidrBlock
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref MainVPC
+      CidrBlock: 192.168.0.0/24
+      Ipv6CidrBlock: !Sub ['${Param1}00::/64', {Param1: !Select [0, !Split ['00::/', !Select [0, !GetAtt MainVPC.Ipv6CidrBlocks]]]}]
+      AssignIpv6AddressOnCreation: true
+
+  PublicSubnetRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet
+      RouteTableId: !Ref InternetGatewayRouteTable
